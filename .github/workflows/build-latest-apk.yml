@@ -28,8 +28,13 @@ jobs:
       - name: Reconstruct BK PAY v1.7.2
         shell: bash
         run: |
-          cat v172patch/part*.txt | base64 -d > /tmp/v172.zstpatch
+          : > /tmp/v172.zstpatch
+          for f in v172patch/part*.txt; do
+            base64 -d "$f" >> /tmp/v172.zstpatch
+          done
+          echo "ac3d257a944213d04fb8406be42ca6330fbd4b3d26da80012d13ca1ea28e42e3  /tmp/v172.zstpatch" | sha256sum -c -
           cp BK-PAY-latest.apk /tmp/base.apk
+          echo "5dd37d5d6add84981ed4f7095bd27ec79c60fc4067db245cbe6375d3bf088dc2  /tmp/base.apk" | sha256sum -c -
           zstd -d --patch-from=/tmp/base.apk /tmp/v172.zstpatch -o BK-PAY-latest.apk -f
           echo "357d5cdc11b1486a687823a9e9f69e68826d38f3245d5f6c683fe5f44e8bd51f  BK-PAY-latest.apk" | sha256sum -c -
 
