@@ -1,10 +1,10 @@
 {
-  "versionCode": 103,
-  "versionName": "1.7",
+  "versionCode": 104,
+  "versionName": "1.7.1",
   "forceUpdate": true,
   "apkUrl": "https://raw.githubusercontent.com/vktr5ycgfh-lgtm/bk-pay-update/main/BK-PAY-latest.apk",
-  "message": "BK PAY v1.7 is required. Update now to get Settings, Sign In/Sign Up, themes, language options, custom UPI ID, notification bell and Help Bot.",
-  "noticeId": "bkpay-v17-required",
-  "noticeTitle": "BK PAY v1.7 update required",
-  "noticeMessage": "Update to BK PAY v1.7 for the new account, settings, themes, language, custom UPI ID, notification bell and Help Bot features."
+  "message": "BK PAY v1.7.1 adds cloud OTP accounts, cloud payment-history backup, duplicate cleanup, profile controls and separate voice language.",
+  "noticeId": "bkpay-v171-cloud",
+  "noticeTitle": "BK PAY v1.7.1 cloud update",
+  "noticeMessage": "Cloud account, payment-history sync, duplicate cleanup, profile and voice-language controls are ready."
 }
