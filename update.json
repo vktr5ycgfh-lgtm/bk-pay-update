@@ -1,10 +1,10 @@
 {
-  "versionCode": 112,
-  "versionName": "1.1.1",
+  "versionCode": 113,
+  "versionName": "1.1.2",
   "forceUpdate": true,
   "apkUrl": "https://raw.githubusercontent.com/vktr5ycgfh-lgtm/bk-pay-update/main/BK-PAY-latest.apk",
-  "message": "RIDER'S PAY v1.1.1 is required. This hotfix adds the built-in update downloader/installer flow for future releases while keeping Duty Mode and the floating live fare controls.",
-  "noticeId": "riders-pay-v111-required",
-  "noticeTitle": "RIDER'S PAY v1.1.1 update required",
-  "noticeMessage": "Install this updater hotfix. After this release, future RIDER'S PAY updates can download inside the app before Android asks you to confirm the update."
+  "message": "RIDER'S PAY v1.1.2 is required. Fixes the previous APK installation packaging issue and adds QR PAY directly in the floating fare window. At drop, tap QR PAY to stop the trip, insert the final calculated fare and show the customer's UPI QR immediately.",
+  "noticeId": "riders-pay-v112-required",
+  "noticeTitle": "RIDER'S PAY v1.1.2 update required",
+  "noticeMessage": "Floating QR Pay is now available and the APK install packaging has been corrected."
 }
