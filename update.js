@@ -6,6 +6,7 @@
   "graceHours": 24,
   "releaseChannel": "early-access",
   "apkUrl": "https://raw.githubusercontent.com/vktr5ycgfh-lgtm/bk-pay-update/main/BK-PAY-latest.apk",
+  "websiteUrl": "https://www.riderspay.com/",
   "message": "RIDER'S PAY v1.1.3 Early Access is available now. Includes floating controls, QR PAY, live fare, waiting/night/long-pickup calculation, payment flow and update checks. Install from the app or riderspay.com.",
   "noticeId": "riders-pay-v113-early-access-web-actions",
   "noticeTitle": "RIDER'S PAY v1.1.3 — Early Access",
@@ -56,6 +57,7 @@
           (updateAvailable?'<button onclick="ridersPayUpdateNow()" style="min-height:42px;border:0;border-radius:13px;background:#facc15;color:#111827;font-weight:900;font-size:12px;letter-spacing:.04em;">UPDATE NOW</button>':
           '<button disabled style="min-height:42px;border:1px solid rgba(250,204,21,.45);border-radius:13px;background:rgba(250,204,21,.12);color:#facc15;font-weight:900;font-size:12px;">PUBLIC VERSION ACTIVE</button>')+
           '<button onclick="ridersPayCheckNow()" style="min-height:42px;border:1px solid rgba(148,163,184,.35);border-radius:13px;background:rgba(15,23,42,.7);color:#e2e8f0;font-weight:900;font-size:12px;letter-spacing:.03em;">CHECK FOR NEW UPDATES</button>'+
+          '<button onclick="window.location.href=meta.websiteUrl" style="min-height:42px;border:1px solid rgba(250,204,21,.55);border-radius:13px;background:rgba(113,63,18,.45);color:#fde68a;font-weight:900;font-size:12px;letter-spacing:.03em;">OPEN RIDERSPAY.COM</button>'+
           '</div>'
         ):'';
         return '<div class="bk-notice"><div class="font-black text-sm">'+rpSafe(n.title)+'</div>'+
