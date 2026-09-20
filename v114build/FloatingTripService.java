@@ -47,7 +47,8 @@ public class FloatingTripService extends Service implements LocationListener {
     private String state = "IDLE";
     private boolean waiting = false;
     private double pickupMeters = 0, rideMeters = 0;
-    private long startedAt = 0, pickedAt = 0, waitAccumMs = 0, waitStartedAt = 0;\n    private double manualAmount = -1;
+    private long startedAt = 0, pickedAt = 0, waitAccumMs = 0, waitStartedAt = 0;
+    private double manualAmount = -1;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -116,7 +117,8 @@ public class FloatingTripService extends Service implements LocationListener {
         bubble.setTextSize(14);
         bubble.setTypeface(null, android.graphics.Typeface.BOLD);
         bubble.setLines(2);
-        bubble.setBackground(bg(0xfff2b900,39,0xff6b4f00));\n        bubble.setElevation(dp(8));
+        bubble.setBackground(bg(0xfff2b900,39,0xff6b4f00));
+    bubble.setElevation(dp(8));
         LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(dp(82),dp(82));
         root.addView(bubble,bp);
 
@@ -127,11 +129,13 @@ public class FloatingTripService extends Service implements LocationListener {
         startBtn = actionButton("START",0xff166534);
         pickedBtn = actionButton("PICKED",0xff1d4ed8);
         waitBtn = actionButton("WAIT",0xff92400e);
-        amountBtn = actionButton("SET ₹",0xffa16207);\n        qrBtn = actionButton("QR PAY",0xff7c3aed);
+        amountBtn = actionButton("SET ₹",0xffa16207);
+    qrBtn = actionButton("QR PAY",0xff7c3aed);
         menu.addView(startBtn,new LinearLayout.LayoutParams(dp(74),dp(48)));
         LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(dp(74),dp(48));mp.topMargin=dp(5);menu.addView(pickedBtn,mp);
         LinearLayout.LayoutParams wp=new LinearLayout.LayoutParams(dp(74),dp(48));wp.topMargin=dp(5);menu.addView(waitBtn,wp);
-        LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(dp(74),dp(48));ap.topMargin=dp(5);menu.addView(amountBtn,ap);\n        LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(dp(74),dp(48));qp.topMargin=dp(5);menu.addView(qrBtn,qp);
+        LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(dp(74),dp(48));ap.topMargin=dp(5);menu.addView(amountBtn,ap);
+    LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(dp(74),dp(48));qp.topMargin=dp(5);menu.addView(qrBtn,qp);
         root.addView(menu);
 
         qrPanel = new LinearLayout(this);
@@ -360,7 +364,8 @@ public class FloatingTripService extends Service implements LocationListener {
     private double pickupFare(){double km=pickupMeters/1000.0;return Math.min(Math.max(0,km-p.getFloat("pickupFreeKm",2f))*p.getFloat("pickupRate",5f),p.getFloat("pickupMax",15f));}
     private int waitMinutes(){return Math.min((int)(currentWaitMs()/60000L),p.getInt("waitMaxMinutes",15));}
     private double waitingFare(){return waitMinutes()*p.getFloat("waitPerMin",1f);}
-    private double surgeFare(){return Math.max(0,p.getFloat("defaultSurge",0f));}\n    private double totalFare(){return manualAmount>0?manualAmount:baseFare()+nightFare()+pickupFare()+waitingFare()+surgeFare();}
+    private double surgeFare(){return Math.max(0,p.getFloat("defaultSurge",0f));}
+    private double totalFare(){return manualAmount>0?manualAmount:baseFare()+nightFare()+pickupFare()+waitingFare()+surgeFare();}
 
     private void updateBubble() {
         if(bubble==null)return;
@@ -370,7 +375,8 @@ public class FloatingTripService extends Service implements LocationListener {
         pickedBtn.setEnabled("PICKUP".equals(state));
         waitBtn.setEnabled("RIDING".equals(state));
         waitBtn.setText(waiting?"WAIT ON":"WAIT");
-        amountBtn.setEnabled(!"IDLE".equals(state));\n        qrBtn.setEnabled("RIDING".equals(state)||"REVIEW".equals(state));
+        amountBtn.setEnabled(!"IDLE".equals(state));
+    qrBtn.setEnabled("RIDING".equals(state)||"REVIEW".equals(state));
         startBtn.setAlpha(startBtn.isEnabled()?1f:.45f);pickedBtn.setAlpha(pickedBtn.isEnabled()?1f:.45f);waitBtn.setAlpha(waitBtn.isEnabled()?1f:.45f);amountBtn.setAlpha(amountBtn.isEnabled()?1f:.45f);qrBtn.setAlpha(qrBtn.isEnabled()?1f:.45f);
     }
 
