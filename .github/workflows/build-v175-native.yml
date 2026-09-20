@@ -1,0 +1,56 @@
+name: Build RIDERS PAY v1.7.5 native parts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "v175build/trigger.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Android SDK packages
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+          echo "$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_PATH"
+
+      - name: Compile Java and DEX
+        shell: bash
+        run: |
+          rm -rf v175out
+          mkdir -p v175out/classes v175out/dex v175out/res/drawable
+          javac -source 8 -target 8 -Xlint:-options             -cp "$ANDROID_HOME/platforms/android-35/android.jar"             -d v175out/classes v175build/MainActivity.java
+          jar cf v175out/appclasses.jar -C v175out/classes .
+          "$ANDROID_HOME/build-tools/35.0.0/d8" --release --min-api 26             --lib "$ANDROID_HOME/platforms/android-35/android.jar"             --output v175out/dex v175out/appclasses.jar
+
+      - name: Compile manifest
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, pathlib
+          # Valid 1x1 PNG. Used only so aapt2 assigns @drawable/icon in the manifest.
+          png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nWQAAAAASUVORK5CYII='
+          pathlib.Path('v175out/res/drawable/icon.png').write_bytes(base64.b64decode(png))
+          PY
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" compile --dir v175out/res -o v175out/compiled.zip
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" link             -I "$ANDROID_HOME/platforms/android-35/android.jar"             --manifest v175build/AndroidManifest.xml             --min-sdk-version 26 --target-sdk-version 35             --version-code 108 --version-name 1.7.5             -o v175out/manifest.apk v175out/compiled.zip
+          unzip -p v175out/manifest.apk AndroidManifest.xml > v175out/AndroidManifest.xml
+          cp v175out/dex/classes.dex v175out/classes.dex
+          sha256sum v175out/AndroidManifest.xml v175out/classes.dex
+          (cd v175out && zip -q native-parts.zip AndroidManifest.xml classes.dex)
+
+      - name: Upload native parts
+        uses: actions/upload-artifact@v4
+        with:
+          name: riders-pay-v175-native-parts
+          path: v175out/native-parts.zip
+          retention-days: 3
