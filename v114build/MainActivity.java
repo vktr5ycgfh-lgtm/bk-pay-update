@@ -378,7 +378,10 @@ public class MainActivity extends Activity {
                     .putInt("waitMaxMinutes", o.optInt("waitMaxMinutes", 15))
                     .putFloat("pickupFreeKm", (float)o.optDouble("pickupFreeKm", 2))
                     .putFloat("pickupRate", (float)o.optDouble("pickupRate", 5))
-                    .putFloat("pickupMax", (float)o.optDouble("pickupMax", 15))\n                    .putFloat("minFareKm", (float)o.optDouble("minFareKm", 4.5))\n                    .putFloat("minFare", (float)o.optDouble("minFare", 50))\n                    .putFloat("defaultSurge", (float)o.optDouble("defaultSurge", 0))
+                    .putFloat("pickupMax", (float)o.optDouble("pickupMax", 15))
+    .putFloat("minFareKm", (float)o.optDouble("minFareKm", 4.5))
+    .putFloat("minFare", (float)o.optDouble("minFare", 50))
+    .putFloat("defaultSurge", (float)o.optDouble("defaultSurge", 0))
                     .apply();
             } catch (Exception ignored) {}
         }
