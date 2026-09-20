@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "v10patch-trigger.txt"
+      - "v11patch-trigger.txt"
   workflow_dispatch:
 
 permissions:
@@ -25,18 +25,18 @@ jobs:
             sudo apt-get install -y zstd
           fi
 
-      - name: Reconstruct RIDER'S PAY v1.0
+      - name: Reconstruct RIDER'S PAY v1.1
         shell: bash
         run: |
-          : > /tmp/v10.zstpatch
-          for f in v10patch/part*.txt; do
-            base64 -d "$f" >> /tmp/v10.zstpatch
+          : > /tmp/v11.zstpatch
+          for f in v11patch/part*.txt; do
+            base64 -d "$f" >> /tmp/v11.zstpatch
           done
-          echo "faeed49fabfe3add4e9b19757f0cfe6aa72fbbaca064ab1c4908df45e61b4844  /tmp/v10.zstpatch" | sha256sum -c -
+          echo "f965fcc38e22d09bdcfdadbbc50bd961bd8de2b658553a00135baede58dfde19  /tmp/v11.zstpatch" | sha256sum -c -
           cp BK-PAY-latest.apk /tmp/base.apk
-          echo "357d5cdc11b1486a687823a9e9f69e68826d38f3245d5f6c683fe5f44e8bd51f  /tmp/base.apk" | sha256sum -c -
-          zstd -d --patch-from=/tmp/base.apk /tmp/v10.zstpatch -o BK-PAY-latest.apk -f
-          echo "a51fefa4d6b5ff0dd0e96c0f608af87dcb3cad7cd43e80d330bb9003bc5896cc  BK-PAY-latest.apk" | sha256sum -c -
+          echo "a51fefa4d6b5ff0dd0e96c0f608af87dcb3cad7cd43e80d330bb9003bc5896cc  /tmp/base.apk" | sha256sum -c -
+          zstd -d --patch-from=/tmp/base.apk /tmp/v11.zstpatch -o BK-PAY-latest.apk -f
+          echo "cb0022ec022c229923205de4897f5100281e087ac2515341a653e4c00fe3e56e  BK-PAY-latest.apk" | sha256sum -c -
 
       - name: Commit latest APK
         shell: bash
@@ -48,5 +48,5 @@ jobs:
             echo "BK-PAY-latest.apk is already current."
             exit 0
           fi
-          git commit -m "Publish RIDER'S PAY v1.0"
+          git commit -m "Publish RIDER'S PAY v1.1 floating duty update"
           git push
