@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "v171patch-trigger.txt"
+      - "v172patch-trigger.txt"
   workflow_dispatch:
 
 permissions:
@@ -25,13 +25,13 @@ jobs:
             sudo apt-get install -y zstd
           fi
 
-      - name: Reconstruct BK PAY v1.7.1
+      - name: Reconstruct BK PAY v1.7.2
         shell: bash
         run: |
-          cat v171patch/part*.txt | base64 -d > /tmp/v171.zstpatch
+          cat v172patch/part*.txt | base64 -d > /tmp/v172.zstpatch
           cp BK-PAY-latest.apk /tmp/base.apk
-          zstd -d --patch-from=/tmp/base.apk /tmp/v171.zstpatch -o BK-PAY-latest.apk -f
-          echo "5dd37d5d6add84981ed4f7095bd27ec79c60fc4067db245cbe6375d3bf088dc2  BK-PAY-latest.apk" | sha256sum -c -
+          zstd -d --patch-from=/tmp/base.apk /tmp/v172.zstpatch -o BK-PAY-latest.apk -f
+          echo "357d5cdc11b1486a687823a9e9f69e68826d38f3245d5f6c683fe5f44e8bd51f  BK-PAY-latest.apk" | sha256sum -c -
 
       - name: Commit latest APK
         shell: bash
@@ -43,5 +43,5 @@ jobs:
             echo "BK-PAY-latest.apk is already current."
             exit 0
           fi
-          git commit -m "Publish BK PAY v1.7.1 latest APK"
+          git commit -m "Publish BK PAY v1.7.2 OTP hotfix"
           git push
