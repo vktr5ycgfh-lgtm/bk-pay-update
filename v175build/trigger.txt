@@ -1,1 +1,1 @@
-build v1.7.5.1 native parts
+build RIDER'S PAY version 1.0 native parts
