@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "bkpay-v17.patch.json"
+      - "bkpay-v17.patch.json.gz.b64"
       - ".github/workflows/build-latest-apk.yml"
   workflow_dispatch:
 
@@ -22,11 +22,12 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import base64, hashlib, json
+          import base64, gzip, hashlib, json
           from pathlib import Path
 
           base = Path("BK-PAY-v1.5-Online-Update.apk").read_bytes()
-          patch = json.loads(Path("bkpay-v17.patch.json").read_text())
+          packed = base64.b64decode(Path("bkpay-v17.patch.json.gz.b64").read_text().strip())
+          patch = json.loads(gzip.decompress(packed))
           base_sha = hashlib.sha256(base).hexdigest()
           if base_sha != patch["base_sha256"]:
               raise SystemExit(f"Base APK SHA mismatch: {base_sha}")
