@@ -1,10 +1,10 @@
-name: Build BK PAY latest APK
+name: Build RIDER'S PAY latest APK
 
 on:
   push:
     branches: ["main"]
     paths:
-      - "v172patch-trigger.txt"
+      - "v10patch-trigger.txt"
   workflow_dispatch:
 
 permissions:
@@ -25,21 +25,18 @@ jobs:
             sudo apt-get install -y zstd
           fi
 
-      - name: Reconstruct BK PAY v1.7.2
+      - name: Reconstruct RIDER'S PAY v1.0
         shell: bash
         run: |
-          : > /tmp/v172.zstpatch
-          for f in v172patch/part*.txt; do
-            base64 -d "$f" > /tmp/chunk.bin
-            echo "$f $(wc -c < /tmp/chunk.bin) bytes"
-            sha256sum /tmp/chunk.bin
-            cat /tmp/chunk.bin >> /tmp/v172.zstpatch
+          : > /tmp/v10.zstpatch
+          for f in v10patch/part*.txt; do
+            base64 -d "$f" >> /tmp/v10.zstpatch
           done
-          echo "ac3d257a944213d04fb8406be42ca6330fbd4b3d26da80012d13ca1ea28e42e3  /tmp/v172.zstpatch" | sha256sum -c -
+          echo "faeed49fabfe3add4e9b19757f0cfe6aa72fbbaca064ab1c4908df45e61b4844  /tmp/v10.zstpatch" | sha256sum -c -
           cp BK-PAY-latest.apk /tmp/base.apk
-          echo "5dd37d5d6add84981ed4f7095bd27ec79c60fc4067db245cbe6375d3bf088dc2  /tmp/base.apk" | sha256sum -c -
-          zstd -d --patch-from=/tmp/base.apk /tmp/v172.zstpatch -o BK-PAY-latest.apk -f
-          echo "357d5cdc11b1486a687823a9e9f69e68826d38f3245d5f6c683fe5f44e8bd51f  BK-PAY-latest.apk" | sha256sum -c -
+          echo "357d5cdc11b1486a687823a9e9f69e68826d38f3245d5f6c683fe5f44e8bd51f  /tmp/base.apk" | sha256sum -c -
+          zstd -d --patch-from=/tmp/base.apk /tmp/v10.zstpatch -o BK-PAY-latest.apk -f
+          echo "a51fefa4d6b5ff0dd0e96c0f608af87dcb3cad7cd43e80d330bb9003bc5896cc  BK-PAY-latest.apk" | sha256sum -c -
 
       - name: Commit latest APK
         shell: bash
@@ -51,5 +48,5 @@ jobs:
             echo "BK-PAY-latest.apk is already current."
             exit 0
           fi
-          git commit -m "Publish BK PAY v1.7.2 OTP hotfix"
+          git commit -m "Publish RIDER'S PAY v1.0"
           git push
