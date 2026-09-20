@@ -1,10 +1,10 @@
 {
-  "versionCode": 105,
-  "versionName": "1.7.2",
+  "versionCode": 110,
+  "versionName": "1.0",
   "forceUpdate": true,
   "apkUrl": "https://raw.githubusercontent.com/vktr5ycgfh-lgtm/bk-pay-update/main/BK-PAY-latest.apk",
-  "message": "BK PAY v1.7.2 is required. This OTP hotfix adds clearer OTP errors, resend timing, server timeout handling and Continue Offline so users are not locked out if SMS delivery is unavailable.",
-  "noticeId": "bkpay-v172-required",
-  "noticeTitle": "BK PAY v1.7.2 update required",
-  "noticeMessage": "Install v1.7.2 for the OTP hotfix and offline fallback. Mobile SMS OTP still requires the server SMS provider to be configured."
+  "message": "RIDER'S PAY v1.0 is required. This release includes Trip Mode, automatic GPS distance fare, editable Rate Card, night fare, waiting and long-pickup charges, Surge/Tip controls, multilingual guidance and the new RIDER'S PAY logo.",
+  "noticeId": "riders-pay-v10-required",
+  "noticeTitle": "RIDER'S PAY v1.0 update required",
+  "noticeMessage": "Update to RIDER'S PAY v1.0 for the latest trip fare, QR payment and Rate Card features."
 }
