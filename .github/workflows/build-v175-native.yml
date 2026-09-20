@@ -42,7 +42,7 @@ jobs:
           pathlib.Path('v175out/res/drawable/icon.png').write_bytes(base64.b64decode(png))
           PY
           "$ANDROID_HOME/build-tools/34.0.0/aapt2" compile --dir v175out/res -o v175out/compiled.zip
-          "$ANDROID_HOME/build-tools/34.0.0/aapt2" link             -I "$ANDROID_HOME/platforms/android-35/android.jar"             --manifest v175build/AndroidManifest.xml             --min-sdk-version 26 --target-sdk-version 35             --version-code 109 --version-name 1.7.5.1             -o v175out/manifest.apk v175out/compiled.zip
+          "$ANDROID_HOME/build-tools/34.0.0/aapt2" link             -I "$ANDROID_HOME/platforms/android-35/android.jar"             --manifest v175build/AndroidManifest.xml             --min-sdk-version 26 --target-sdk-version 35             --version-code 110 --version-name 1.0             -o v175out/manifest.apk v175out/compiled.zip
           unzip -p v175out/manifest.apk AndroidManifest.xml > v175out/AndroidManifest.xml
           cp v175out/dex/classes.dex v175out/classes.dex
           sha256sum v175out/AndroidManifest.xml v175out/classes.dex
@@ -51,6 +51,6 @@ jobs:
       - name: Upload native parts
         uses: actions/upload-artifact@v4
         with:
-          name: riders-pay-v1751-native-parts
+          name: riders-pay-v10-native-parts
           path: v175out/native-parts.zip
           retention-days: 3
