@@ -1,15 +1,15 @@
 (function(){
   const meta={
   "versionCode": 114,
-  "versionName": "1.1.3 Public",
+  "versionName": "1.1.3 Early Access",
   "forceUpdate": false,
   "graceHours": 24,
-  "releaseChannel": "public",
+  "releaseChannel": "early-access",
   "apkUrl": "https://raw.githubusercontent.com/vktr5ycgfh-lgtm/bk-pay-update/main/BK-PAY-latest.apk",
-  "message": "RIDER'S PAY v1.1.3 is now public. New: floating rider controls, QR PAY at drop, live distance fare, waiting/night/long-pickup calculations, smoother payment flow, notification bell and update checks. Update during the 24-hour grace period.",
-  "noticeId": "riders-pay-v113-public-launch-actions",
-  "noticeTitle": "RIDER'S PAY v1.1.3 — Update available",
-  "noticeMessage": "Tap UPDATE NOW to install the latest public RIDER'S PAY. You can also tap CHECK FOR NEW UPDATES anytime from this notification or Settings."
+  "message": "RIDER'S PAY v1.1.3 Early Access is available now. Includes floating controls, QR PAY, live fare, waiting/night/long-pickup calculation, payment flow and update checks. Install from the app or riderspay.com.",
+  "noticeId": "riders-pay-v113-early-access-web-actions",
+  "noticeTitle": "RIDER'S PAY v1.1.3 — Early Access",
+  "noticeMessage": "Early Access is live. Tap UPDATE NOW to install it, or open riderspay.com to download the update directly."
 };
   window.BK_PAY_UPDATE=meta;
 
