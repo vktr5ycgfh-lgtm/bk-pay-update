@@ -38,7 +38,7 @@ jobs:
           python3 - <<'PY'
           import base64, pathlib
           # Valid 1x1 PNG. Used only so aapt2 assigns @drawable/icon in the manifest.
-          png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nWQAAAAASUVORK5CYII='
+          png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgaPj/HwAEggJ/59habAAAAABJRU5ErkJggg=='
           pathlib.Path('v175out/res/drawable/icon.png').write_bytes(base64.b64decode(png))
           PY
           "$ANDROID_HOME/build-tools/34.0.0/aapt2" compile --dir v175out/res -o v175out/compiled.zip
