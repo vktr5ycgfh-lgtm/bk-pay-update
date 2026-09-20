@@ -4,67 +4,44 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "bkpatch-trigger.txt"
+      - "v171patch-trigger.txt"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build-latest:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Reconstruct signed BK PAY APK
+      - name: Ensure zstd
         shell: bash
         run: |
-          python - <<'PY'
-          import base64, gzip, hashlib, json
-          from pathlib import Path
+          if ! command -v zstd >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y zstd
+          fi
 
-          base = Path("BK-PAY-v1.5-Online-Update.apk").read_bytes()
-          packed_b64 = "".join(
-              p.read_text().strip()
-              for p in sorted(Path("bkpatch").glob("part*.txt"))
-          )
-          packed = base64.b64decode(packed_b64)
-          patch = json.loads(gzip.decompress(packed))
-          base_sha = hashlib.sha256(base).hexdigest()
-          if base_sha != patch["base_sha256"]:
-              raise SystemExit(f"Base APK SHA mismatch: {base_sha}")
-
-          out = bytearray()
-          for op in patch["ops"]:
-              if op[0] == "c":
-                  start, length = int(op[1]), int(op[2])
-                  out.extend(base[start:start+length])
-              elif op[0] == "d":
-                  out.extend(base64.b64decode(op[1]))
-              else:
-                  raise SystemExit(f"Unknown patch op: {op[0]}")
-
-          target = bytes(out)
-          if len(target) != int(patch["target_size"]):
-              raise SystemExit("Target APK size mismatch")
-          target_sha = hashlib.sha256(target).hexdigest()
-          if target_sha != patch["target_sha256"]:
-              raise SystemExit(f"Target APK SHA mismatch: {target_sha}")
-
-          Path("BK-PAY-latest.apk").write_bytes(target)
-          print("Built BK-PAY-latest.apk", len(target), target_sha)
-          PY
+      - name: Reconstruct BK PAY v1.7.1
+        shell: bash
+        run: |
+          cat v171patch/part*.txt | base64 -d > /tmp/v171.zstpatch
+          cp BK-PAY-latest.apk /tmp/base.apk
+          zstd -d --patch-from=/tmp/base.apk /tmp/v171.zstpatch -o BK-PAY-latest.apk -f
+          echo "5dd37d5d6add84981ed4f7095bd27ec79c60fc4067db245cbe6375d3bf088dc2  BK-PAY-latest.apk" | sha256sum -c -
 
       - name: Commit latest APK
         shell: bash
         run: |
-          if git diff --quiet -- BK-PAY-latest.apk && git ls-files --error-unmatch BK-PAY-latest.apk >/dev/null 2>&1; then
-            echo "BK-PAY-latest.apk is already current."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add BK-PAY-latest.apk
-          git commit -m "Publish BK PAY v1.7 latest APK"
+          if git diff --cached --quiet; then
+            echo "BK-PAY-latest.apk is already current."
+            exit 0
+          fi
+          git commit -m "Publish BK PAY v1.7.1 latest APK"
           git push
