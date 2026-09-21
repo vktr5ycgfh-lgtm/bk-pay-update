@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           rm -rf v115b3out
-          mkdir -p v115b3out/classes v115b3out/dex v115b3out/res/drawable
+          mkdir -p v115b3out/classes v115b3out/dex v115b3out/res/drawable\n          cp "$ANDROID_HOME/platforms/android-35/android.jar" v115b3out/android.jar
           javac -source 8 -target 8 -Xlint:-options             -cp "$ANDROID_HOME/platforms/android-35/android.jar"             -d v115b3out/classes             v114build/MainActivity.java v114build/FloatingTripService.java v114build/UpdateProvider.java
           jar cf v115b3out/appclasses.jar -C v115b3out/classes .
           "$ANDROID_HOME/build-tools/34.0.0/d8" --release --min-api 26             --lib "$ANDROID_HOME/platforms/android-35/android.jar"             --output v115b3out/dex v115b3out/appclasses.jar
