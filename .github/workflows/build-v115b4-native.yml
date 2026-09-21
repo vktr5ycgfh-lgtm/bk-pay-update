@@ -51,5 +51,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: riders-pay-v115b4-native-parts
-          path: v115b4out/native-parts.zip
+          path: |\n            v115b4out/native-parts.zip\n            v115b4out/android.jar
           retention-days: 2
