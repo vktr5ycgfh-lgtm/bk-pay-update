@@ -1,0 +1,55 @@
+name: Build RIDERS PAY v1.1.5-beta4 native parts
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "v114build/**"
+      - ".github/workflows/build-v115b4-native.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Android SDK packages
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;34.0.0"
+
+      - name: Compile Java and DEX
+        shell: bash
+        run: |
+          rm -rf v115b4out
+          mkdir -p v115b4out/classes v115b4out/dex v115b4out/res/drawable
+          javac -source 8 -target 8 -Xlint:-options             -cp "$ANDROID_HOME/platforms/android-35/android.jar"             -d v115b4out/classes             v114build/MainActivity.java v114build/FloatingTripService.java v114build/UpdateProvider.java
+          jar cf v115b4out/appclasses.jar -C v115b4out/classes .
+          "$ANDROID_HOME/build-tools/34.0.0/d8" --release --min-api 26             --lib "$ANDROID_HOME/platforms/android-35/android.jar"             --output v115b4out/dex v115b4out/appclasses.jar
+
+      - name: Compile manifest
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, pathlib
+          png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgaPj/HwAEggJ/59habAAAAABJRU5ErkJggg=='
+          pathlib.Path('v115b4out/res/drawable/icon.png').write_bytes(base64.b64decode(png))
+          PY
+          "$ANDROID_HOME/build-tools/34.0.0/aapt2" compile --dir v115b4out/res -o v115b4out/compiled.zip
+          "$ANDROID_HOME/build-tools/34.0.0/aapt2" link             -I "$ANDROID_HOME/platforms/android-35/android.jar"             --manifest v114build/AndroidManifest.xml             --min-sdk-version 26 --target-sdk-version 35             --version-code 999999 --version-name 1.1.5-beta4             -o v115b4out/manifest.apk v115b4out/compiled.zip
+          unzip -p v115b4out/manifest.apk AndroidManifest.xml > v115b4out/AndroidManifest.xml
+          cp v115b4out/dex/classes.dex v115b4out/classes.dex
+          sha256sum v115b4out/AndroidManifest.xml v115b4out/classes.dex
+          (cd v115b4out && zip -q native-parts.zip AndroidManifest.xml classes.dex)
+
+      - name: Upload native parts
+        uses: actions/upload-artifact@v4
+        with:
+          name: riders-pay-v115b4-native-parts
+          path: v115b4out/native-parts.zip
+          retention-days: 2
