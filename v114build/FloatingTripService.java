@@ -255,36 +255,17 @@ public class FloatingTripService extends Service implements LocationListener {
         if(!"REVIEW".equals(state)) return;
 
         double amount = totalFare();
-        String vpa = p.getString("upiVpa","");
-        String name = p.getString("payeeName","RIDER'S PAY");
-        if(!validUpi(vpa)) {
-            toast("Set your UPI ID in RIDER'S PAY first");
-            openMainApp();
-            return;
-        }
         if(amount <= 0.0) { toast("Fare is ₹0.00"); return; }
 
-        String ref = "RDPF" + System.currentTimeMillis();
-        try {
-            String upi = "upi://pay?pa=" + URLEncoder.encode(vpa,"UTF-8")
-                + "&pn=" + URLEncoder.encode(name,"UTF-8")
-                + "&am=" + String.format(Locale.US,"%.2f",amount)
-                + "&cu=INR&tr=" + URLEncoder.encode(ref,"UTF-8");
-            String safe = upi.replace("\\","\\\\").replace("'","\\'");
-            String html = "<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'>"
-                + "<style>html,body{margin:0;background:#fff;width:100%;height:100%;display:flex;align-items:center;justify-content:center}#q img{width:230px;height:230px;image-rendering:auto}</style>"
-                + "<script src='qrcode.js'></script></head><body><div id='q'></div><script>"
-                + "var q=qrcode(0,'M');q.addData('" + safe + "');q.make();document.getElementById('q').innerHTML=q.createImgTag(7,28);"
-                + "</script></body></html>";
-            qrAmount.setText(String.format(Locale.US,"PAY ₹%.2f",amount));
-            qrPayee.setText(vpa);
-            menu.setVisibility(View.GONE);
-            qrPanel.setVisibility(View.VISIBLE);
-            qrWeb.loadDataWithBaseURL("file:///android_asset/",html,"text/html","UTF-8",null);
-            toast("Final fare inserted in QR");
-        } catch(Exception e) {
-            toast("Could not generate payment QR");
-        }
+        // Cashfree payments must go through the secure Riders Pay web/backend flow.
+        // Do not generate a direct rider UPI QR here because that would bypass
+        // the platform split/commission. The web app reads the native trip snapshot
+        // on resume and prepares the Cashfree checkout using the final fare.
+        p.edit().putFloat("cashfreePendingAmount", (float)amount).apply();
+        if(menu != null) menu.setVisibility(View.GONE);
+        hidePaymentQr();
+        toast("Opening RIDER'S PAY for Cashfree payment");
+        openMainApp();
     }
 
     private Button actionButton(String text,int color){
