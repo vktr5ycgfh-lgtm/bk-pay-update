@@ -1,4 +1,4 @@
-# BK PAY Update Channel
+# RIDERS PAY Update Channel
 
 This public repository hosts the BK PAY online update metadata.
 
