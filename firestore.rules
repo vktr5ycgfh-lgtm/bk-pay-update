@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function role(name) { return signedIn() && request.auth.token.role == name; }
+    match /rides/{rideId} {
+      allow read: if signedIn() && (resource.data.customerId == request.auth.uid
+        || resource.data.driverId == request.auth.uid || resource.data.offeredDriverId == request.auth.uid);
+      allow create, update, delete: if false;
+      match /telemetry/{pointId} {
+        allow read: if signedIn() && (get(/databases/$(database)/documents/rides/$(rideId)).data.customerId == request.auth.uid
+          || get(/databases/$(database)/documents/rides/$(rideId)).data.driverId == request.auth.uid);
+        allow write: if role('driver') && get(/databases/$(database)/documents/rides/$(rideId)).data.driverId == request.auth.uid
+          && request.resource.data.keys().hasOnly(['location','bearing','speedMps','updatedAt']);
+      }
+    }
+    match /drivers/{driverId} {
+      allow read: if signedIn() && request.auth.uid == driverId;
+      allow update: if role('driver') && request.auth.uid == driverId
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['location','geohash','bearing','speedMps','updatedAt','isDutyOn','fcmToken']);
+      allow create, delete: if false;
+    }
+    match /stands/{standId}/active_queue/{driverId} {
+      allow read: if signedIn() && request.auth.uid == driverId;
+      allow write: if false;
+    }
+    match /customers/{customerId} {
+      allow read, write: if signedIn() && request.auth.uid == customerId;
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "active_queue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath":"isDutyOn","order":"ASCENDING"},
+        {"fieldPath":"isBusy","order":"ASCENDING"},
+        {"fieldPath":"queueTier","order":"ASCENDING"},
+        {"fieldPath":"effectiveQueueTime","order":"ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "drivers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath":"isDutyOn","order":"ASCENDING"},
+        {"fieldPath":"isBusy","order":"ASCENDING"},
+        {"fieldPath":"geohash","order":"ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

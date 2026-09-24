@@ -1,56 +1,20 @@
-# Riders Pay — Auto Driver Android Beta
+# RIDERS PAY + NEED RIDE
 
-A fresh native Android project following the **“RIDERS PAY — Digital Partner for Auto Drivers”** presentation provided by the project owner. This is a new, standalone implementation, **not an update to an older APK**.
+Production-oriented Android/Firebase monorepo:
 
-## Implemented (v0.3 floating meter beta source)
+- `driver-app`: RIDERS PAY driver app, Google Maps navigation, draggable HUD overlay, full-screen dispatch alert, live coordinate upload.
+- `consumer-app`: NEED RIDE booking, nearby autos, route/fare preview, ride progress, live tracking and UPI QR settlement.
+- `functions`: transactional stand FIFO dispatcher, FCM offers, 20-second task-queue cascade, accept/decline and completion re-queue.
 
-- Full yellow Tamil Nadu auto-inspired visual redesign using the supplied Riders Pay logo for the launcher and splash.
-- Draggable yellow floating HUD over navigation apps with live speed, distance and fare. Long-press opens an inward, edge-aware translucent radial menu: Start, Arrived, Picked, Waiting, Dropped and Fare QR.
-- Editable manual fare card: base fare, per-kilometre fare, minimum fare (saved in paise). The starting values are illustrative, NOT asserted to be legally approved local fares.
-- Driver duty ON/OFF, GPS trip initiation, background foreground-service tracking, live trip distance / duration / estimated fare, GPS readiness indication.
-- End trip → save ledger entry → amount-filled UPI QR to the driver’s configured UPI ID; optional manual “UPI received” or “cash received” ledger status.
-- Local trip history and pending/recorded-paid totals. No account, cloud dependency or advertising SDK.
+## Required configuration
 
-## Important boundaries
+1. Create one Firebase project and two Android apps: `com.riderspay.driver` and `com.riderspay.consumer`. Put each downloaded `google-services.json` in its app module.
+2. Enable Firebase Authentication, Firestore, Cloud Messaging, Cloud Functions, Cloud Tasks, Google Maps SDK for Android, Places API and Routes API.
+3. Add `MAPS_API_KEY=...`, `UPI_ID=driver@bank`, and `DEFAULT_STAND_ID=your_registered_stand` to the root `local.properties` (never commit it).
+4. Set Firebase Auth custom claim `role` to `driver` or `customer`. Cloud Functions are the only writers of dispatch/ride-state fields.
+5. From `functions`: `npm install && npm run build && firebase deploy --only functions,firestore`. Commit the generated lockfile before CI/production deployment.
+6. Build Android apps with JDK 17 and Gradle 8.10+: `gradle :driver-app:assembleDebug :consumer-app:assembleDebug` (or generate/use a Gradle wrapper).
 
-- **The app is not a certified fare meter.** GPS can be inaccurate in tunnels, poor signal, or dense urban areas. Check applicable regulations before displaying or collecting fare.
-- Android's “display over other apps” permission is required for the floating meter. A persistent notification is shown while it is enabled. The translucent arc is glass-styled; true system-wide backdrop blur is not consistent across Android devices.
-- A prefilled UPI QR **does not verify incoming money** and some UPI apps allow the sender to edit the amount. Confirm receipt in your own bank/UPI app. The app NEVER claims automatic settlement or escrow.
-- The presentation’s **proposed 3% commission, commission cap/incentives, NEED RIDE booking, fair-queue dispatch, third-party platform integrations, and hardware smart meter/POS** remain future concepts; none are presented as operational here.
-- All data is saved locally in Android SharedPreferences. Clearing app storage, uninstalling, or switching phones will remove local history. No recovery or export in this version. Location is collected only during a started trip; last coordinates are deleted when the trip ends.
-- Tested fare/GPS arithmetic only in the supplied offline environment. An emulator and real-device GPS/payment smoke test remain necessary before public release.
+## Production gates
 
-## Build a debug APK
-
-### Option 1 — GitHub Actions (no local Android setup)
-
-1. Upload this folder to a **private GitHub repository** with the main branch and enable Actions.
-2. Open **Actions → Android beta APK → Run workflow**.
-3. After a successful run, open the workflow’s **Artifacts** section and download the generated debug APK artifact. Unzip and install `app-debug.apk` on a test Android device.
-
-The Action uses JDK 17, Gradle 8.9, Android SDK 35, and outputs a **debug-signed APK**. A debug build is for private testing, not Play Store release. Do not publish a debug-signed app as production.
-
-### Option 2 — Android Studio
-
-Install Android Studio with Android SDK Platform 35, Build Tools 35.0.0, JDK 17 and Gradle 8.9. Open this folder as an existing project, sync dependencies, and run `:app:assembleDebug`. If Android Studio requires a Gradle wrapper, generate one with `gradle wrapper --gradle-version 8.9` or select your installed local Gradle 8.9 distribution. Result: `app/build/outputs/apk/debug/app-debug.apk`.
-
-This source ZIP intentionally does **not** include downloaded Gradle distributions, Android SDK files, or private signing keys.
-
-## Quick development checks
-
-```bash
-bash run-core-tests.sh
-```
-
-The script compiles and tests the platform-independent fare and GPS math with `javac` and `java`, without an Android SDK.
-
-## Package details
-
-- Application ID: `com.riderspay.autodriver`
-- Java/native Android (no Flutter, no WebView); min SDK 26 (Android 8), target SDK 35.
-- QR library: ZXing Core 3.5.3 (fetched during Gradle build).
-- Permissions: fine/coarse location on ride start, foreground location tracking, display-over-other-apps for the floating meter, and optional notifications (Android 13+).
-
-## Before wider beta distribution
-
-Build the APK, run a clean-install smoke test on Android 8–16 as available, test GPS tracking with app in foreground/background, check Settings and UPI QR with a test amount, validate local fare rules, and define production signing and version-update policy. Do not embed payment gateway private keys in the app.
+This repository deliberately contains no private signing key, Maps key, Firebase service credential, payment-provider secret or real UPI ID. Before release: add App Check, production signing through CI secrets, crash reporting, privacy/retention policy, Places/Routes billing limits, real-device Android 8–16 tests, background-location disclosure where applicable, Play Console full-screen-intent declaration, and local fare-meter/transport approvals. UPI QR is direct settlement and does not prove receipt; confirm payment independently.

@@ -1,0 +1,10 @@
+.gradle/
+**/build/
+local.properties
+**/google-services.json
+functions/node_modules/
+functions/lib/
+*.jks
+*.keystore
+.firebase/
+firebase-debug.log

@@ -1,0 +1,4 @@
+sdk.dir=/absolute/path/to/Android/sdk
+MAPS_API_KEY=replace_with_restricted_android_key
+UPI_ID=replace_with_driver_or_platform_configured_vpa
+DEFAULT_STAND_ID=replace_with_registered_stand_document_id
