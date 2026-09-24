@@ -2,9 +2,10 @@
 
 A fresh native Android project following the **“RIDERS PAY — Digital Partner for Auto Drivers”** presentation provided by the project owner. This is a new, standalone implementation, **not an update to an older APK**.
 
-## Implemented (v0.2 yellow UI beta source)
+## Implemented (v0.3 floating meter beta source)
 
-- Full yellow Tamil Nadu auto-inspired visual redesign with a new launcher splash, elevated dashboard cards, duty state, live meter, quick actions, trip ledger, settings and a dedicated full-screen payment QR flow.
+- Full yellow Tamil Nadu auto-inspired visual redesign using the supplied Riders Pay logo for the launcher and splash.
+- Draggable yellow floating HUD over navigation apps with live speed, distance and fare. Long-press opens an inward, edge-aware translucent radial menu: Start, Arrived, Picked, Waiting, Dropped and Fare QR.
 - Editable manual fare card: base fare, per-kilometre fare, minimum fare (saved in paise). The starting values are illustrative, NOT asserted to be legally approved local fares.
 - Driver duty ON/OFF, GPS trip initiation, background foreground-service tracking, live trip distance / duration / estimated fare, GPS readiness indication.
 - End trip → save ledger entry → amount-filled UPI QR to the driver’s configured UPI ID; optional manual “UPI received” or “cash received” ledger status.
@@ -13,6 +14,7 @@ A fresh native Android project following the **“RIDERS PAY — Digital Partner
 ## Important boundaries
 
 - **The app is not a certified fare meter.** GPS can be inaccurate in tunnels, poor signal, or dense urban areas. Check applicable regulations before displaying or collecting fare.
+- Android's “display over other apps” permission is required for the floating meter. A persistent notification is shown while it is enabled. The translucent arc is glass-styled; true system-wide backdrop blur is not consistent across Android devices.
 - A prefilled UPI QR **does not verify incoming money** and some UPI apps allow the sender to edit the amount. Confirm receipt in your own bank/UPI app. The app NEVER claims automatic settlement or escrow.
 - The presentation’s **proposed 3% commission, commission cap/incentives, NEED RIDE booking, fair-queue dispatch, third-party platform integrations, and hardware smart meter/POS** remain future concepts; none are presented as operational here.
 - All data is saved locally in Android SharedPreferences. Clearing app storage, uninstalling, or switching phones will remove local history. No recovery or export in this version. Location is collected only during a started trip; last coordinates are deleted when the trip ends.
@@ -47,7 +49,7 @@ The script compiles and tests the platform-independent fare and GPS math with `j
 - Application ID: `com.riderspay.autodriver`
 - Java/native Android (no Flutter, no WebView); min SDK 26 (Android 8), target SDK 35.
 - QR library: ZXing Core 3.5.3 (fetched during Gradle build).
-- Permissions: fine/coarse location on ride start, foreground location tracking service, optional notifications (Android 13+).
+- Permissions: fine/coarse location on ride start, foreground location tracking, display-over-other-apps for the floating meter, and optional notifications (Android 13+).
 
 ## Before wider beta distribution
 

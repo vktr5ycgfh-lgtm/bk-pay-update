@@ -39,7 +39,7 @@ jobs:
         run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: riders-pay-v0.2-yellow-ui-beta-apk
+          name: riders-pay-v0.3-floating-beta-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14

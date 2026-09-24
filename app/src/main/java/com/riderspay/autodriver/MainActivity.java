@@ -70,6 +70,8 @@ public class MainActivity extends Activity {
     private int activeTab = 0;
     private String paymentRideId;
     private long paymentAmountPaise;
+    private boolean paymentPreviewOnly;
+    private boolean waitingForOverlayPermission;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable ticker = new Runnable() {
         @Override public void run() {
@@ -89,6 +91,7 @@ public class MainActivity extends Activity {
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
         render();
+        handleOverlayIntent(getIntent());
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATIONS);
@@ -104,6 +107,11 @@ public class MainActivity extends Activity {
         handler.removeCallbacks(ticker);
         handler.post(ticker);
         updateMeter();
+        if (waitingForOverlayPermission && Settings.canDrawOverlays(this)) {
+            waitingForOverlayPermission = false;
+            startFloatingMeter();
+            render();
+        }
     }
 
     @Override protected void onPause() {
@@ -306,7 +314,9 @@ public class MainActivity extends Activity {
         duty.addView(dutyTop);
         duty.addView(button(prefs.getBoolean("duty_on", false) ? "Go off duty" : "GO ON DUTY", !prefs.getBoolean("duty_on", false), () -> {
             if (prefs.getBoolean("ride_active", false)) { toast("Finish the ride before going off duty"); return; }
-            prefs.edit().putBoolean("duty_on", !prefs.getBoolean("duty_on", false)).apply();
+            boolean goingOn = !prefs.getBoolean("duty_on", false);
+            prefs.edit().putBoolean("duty_on", goingOn).apply();
+            if (goingOn) startFloatingMeter(); else stopFloatingMeter();
             render();
         }), margin(-1, -2, 15, 0));
         content.addView(duty, margin(-1, -2, 8, 12));
@@ -355,7 +365,7 @@ public class MainActivity extends Activity {
                 new LinearLayout.LayoutParams(0, dp(105), 1));
         LinearLayout.LayoutParams tileGap = new LinearLayout.LayoutParams(0, dp(105), 1);
         tileGap.setMargins(dp(8), 0, dp(8), 0);
-        actions.addView(quickAction("▣", "Payments", "Pending fares", () -> { activeTab = 1; render(); }), tileGap);
+        actions.addView(quickAction("◉", "Float meter", "Over your maps", this::startFloatingMeter), tileGap);
         actions.addView(quickAction("▤", "Trips", "Ride history", () -> { activeTab = 1; render(); }),
                 new LinearLayout.LayoutParams(0, dp(105), 1));
         content.addView(actions, margin(-1, -2, 0, 12));
@@ -422,6 +432,7 @@ public class MainActivity extends Activity {
                 .putBoolean("ride_active", true)
                 .putLong("ride_started", now)
                 .putFloat("ride_meters", 0f)
+                .putFloat("ride_speed_mps", 0f)
                 .putInt("ride_fixes", 0)
                 .remove("ride_last_time")
                 .remove("ride_last_lat")
@@ -435,6 +446,7 @@ public class MainActivity extends Activity {
             Intent start = new Intent(this, RideTrackingService.class).setAction(RideTrackingService.START);
             if (Build.VERSION.SDK_INT >= 26) startForegroundService(start);
             else startService(start);
+            startFloatingMeter();
             render();
         } catch (Exception ex) {
             prefs.edit().putBoolean("ride_active", false).apply();
@@ -476,6 +488,8 @@ public class MainActivity extends Activity {
             return;
         }
         prefs.edit().putBoolean("ride_active", false)
+                .putFloat("ride_speed_mps", 0f)
+                .remove("ride_waiting").remove("ride_wait_started").remove("overlay_stage")
                 .remove("ride_last_time").remove("ride_last_lat")
                 .remove("ride_last_lon").commit();
         startService(new Intent(this, RideTrackingService.class).setAction(RideTrackingService.STOP));
@@ -484,8 +498,17 @@ public class MainActivity extends Activity {
     }
 
     private void showPayment(String rideId, long amountPaise) {
+        paymentPreviewOnly = false;
         paymentRideId = rideId;
         paymentAmountPaise = amountPaise;
+        render();
+    }
+
+    private void showPaymentPreview() {
+        if (!prefs.getBoolean("ride_active", false)) { toast("Start a ride first"); return; }
+        paymentPreviewOnly = true;
+        paymentRideId = "LIVE RIDE";
+        paymentAmountPaise = currentFare();
         render();
     }
 
@@ -495,10 +518,12 @@ public class MainActivity extends Activity {
         String rideId = paymentRideId;
         long amountPaise = paymentAmountPaise;
 
-        TextView back = badge("‹  BACK TO TRIPS", GREY);
+        TextView back = badge(paymentPreviewOnly ? "‹  BACK TO LIVE RIDE" : "‹  BACK TO TRIPS", GREY);
         back.setOnClickListener(v -> closePayment());
         content.addView(back, new LinearLayout.LayoutParams(-2, -2));
-        sectionTitle(content, "FARE COLLECTION", "Collect payment", "Ride " + rideId);
+        sectionTitle(content, paymentPreviewOnly ? "LIVE FARE QR" : "FARE COLLECTION",
+                paymentPreviewOnly ? "Show current fare" : "Collect payment",
+                paymentPreviewOnly ? "Preview only · ride is still tracking" : "Ride " + rideId);
 
         LinearLayout amountCard = vertical();
         amountCard.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -543,26 +568,33 @@ public class MainActivity extends Activity {
         }
         content.addView(qrCard, margin(-1, -2, 0, 12));
 
-        LinearLayout paymentActions = horizontal();
-        Button cash = button("CASH RECEIVED", false, () -> manualPayment(rideId, "CASH"));
-        Button upi = button("UPI RECEIVED", true, () -> manualPayment(rideId, "UPI"));
-        paymentActions.addView(cash, new LinearLayout.LayoutParams(0, -2, 1));
-        LinearLayout.LayoutParams upiParams = new LinearLayout.LayoutParams(0, -2, 1);
-        upiParams.setMargins(dp(8), 0, 0, 0);
-        paymentActions.addView(upi, upiParams);
-        content.addView(paymentActions);
-        note(content, "Mark payment only after checking your UPI or bank app. QR payment is not automatically verified.");
-        Button pending = button("SAVE AS PAYMENT PENDING", false, () -> {
-            toast("Ride saved as payment pending");
-            closePayment();
-        });
-        content.addView(pending, margin(-1, -2, 8, 0));
+        if (paymentPreviewOnly) {
+            note(content, "This is a live preview. The final fare is saved only after Dropped or End Ride; payment is not bank-verified.");
+            content.addView(button("BACK TO LIVE RIDE", true, this::closePayment), margin(-1, -2, 8, 0));
+        } else {
+            LinearLayout paymentActions = horizontal();
+            Button cash = button("CASH RECEIVED", false, () -> manualPayment(rideId, "CASH"));
+            Button upi = button("UPI RECEIVED", true, () -> manualPayment(rideId, "UPI"));
+            paymentActions.addView(cash, new LinearLayout.LayoutParams(0, -2, 1));
+            LinearLayout.LayoutParams upiParams = new LinearLayout.LayoutParams(0, -2, 1);
+            upiParams.setMargins(dp(8), 0, 0, 0);
+            paymentActions.addView(upi, upiParams);
+            content.addView(paymentActions);
+            note(content, "Mark payment only after checking your UPI or bank app. QR payment is not automatically verified.");
+            Button pending = button("SAVE AS PAYMENT PENDING", false, () -> {
+                toast("Ride saved as payment pending");
+                closePayment();
+            });
+            content.addView(pending, margin(-1, -2, 8, 0));
+        }
     }
 
     private void closePayment() {
+        boolean preview = paymentPreviewOnly;
+        paymentPreviewOnly = false;
         paymentRideId = null;
         paymentAmountPaise = 0;
-        activeTab = 1;
+        activeTab = preview ? 0 : 1;
         render();
     }
     private Bitmap makeQr(String data, int px) throws Exception {
@@ -584,6 +616,38 @@ public class MainActivity extends Activity {
             toast("Marked " + method + " received (manual record, not bank-verified)");
             closePayment();
         } else toast("Could not update the payment. Please try from History.");
+    }
+
+    private void startFloatingMeter() {
+        if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this)) {
+            waitingForOverlayPermission = true;
+            Intent permission = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(permission);
+            toast("Allow display over other apps to use the floating fare meter");
+            return;
+        }
+        try {
+            Intent show = new Intent(this, FloatingOverlayService.class).setAction(FloatingOverlayService.SHOW);
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(show); else startService(show);
+            toast("Floating meter enabled · long-press it for ride actions");
+        } catch (Exception ex) {
+            toast("Floating meter could not start. Open the app and try again.");
+        }
+    }
+
+    private void stopFloatingMeter() {
+        startService(new Intent(this, FloatingOverlayService.class).setAction(FloatingOverlayService.HIDE));
+    }
+
+    private void handleOverlayIntent(Intent intent) {
+        if (intent == null) return;
+        String action = intent.getStringExtra("overlay_action");
+        if (action == null) return;
+        intent.removeExtra("overlay_action");
+        if ("start".equals(action)) attemptStartRide();
+        else if ("dropped".equals(action)) endRide();
+        else if ("fare_qr".equals(action)) showPaymentPreview();
     }
 
     private void showHistory() {
@@ -813,12 +877,26 @@ public class MainActivity extends Activity {
         }));
         content.addView(upi, margin(-1, -2, 2, 15));
 
+        LinearLayout floating = card();
+        floating.addView(text("04  FLOATING DRIVER METER", 15, YELLOW, true));
+        note(floating, "Shows speed, distance and live fare over navigation apps. Long-press for Start, Arrived, Picked, Waiting, Dropped and Fare QR.");
+        floating.addView(button(Settings.canDrawOverlays(this) ? "SHOW FLOATING METER" : "ALLOW & SHOW FLOATING METER",
+                true, this::startFloatingMeter), margin(-1, -2, 8, 0));
+        floating.addView(button("Hide floating meter", false, this::stopFloatingMeter), margin(-1, -2, 8, 0));
+        content.addView(floating, margin(-1, -2, 2, 15));
+
         LinearLayout privacy = card();
         privacy.addView(text("ABOUT RIDERS PAY BETA", 15, YELLOW, true));
         note(privacy, "Works without an account. Your fare card and trip history remain on this device. Precise location is used only while a ride is active; a foreground notification remains visible.");
         note(privacy, "Payments are made directly to the driver's UPI ID. The app does not verify deposits or automatically deduct commissions.");
         note(privacy, "From the presentation, a customer booking app, dispatch, the proposed 3% platform commission (with cap/incentive concept) and Smart Meter POS require separate later development and, where applicable, payment-provider approval.");
         content.addView(privacy);
+    }
+
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleOverlayIntent(intent);
     }
 
     @Override public void onBackPressed() {

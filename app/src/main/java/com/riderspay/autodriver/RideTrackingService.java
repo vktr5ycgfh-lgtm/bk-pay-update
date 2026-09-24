@@ -85,6 +85,7 @@ public class RideTrackingService extends Service implements LocationListener {
                 || time > System.currentTimeMillis() + 10000L) return;
         long previousTime = prefs.getLong("ride_last_time", 0L);
         double traveled = prefs.getFloat("ride_meters", 0f);
+        float speedMps = fix.hasSpeed() ? Math.max(0f, Math.min(35f, fix.getSpeed())) : 0f;
         if (previousTime > 0) {
             long deltaMs = time - previousTime;
             if (deltaMs <= 0) return;
@@ -93,10 +94,12 @@ public class RideTrackingService extends Service implements LocationListener {
                     Double.longBitsToDouble(prefs.getLong("ride_last_lon", 0)),
                     fix.getLatitude(), fix.getLongitude());
             if (delta > 5 && (delta / (deltaMs / 1000.0)) > 35.0) return;
+            if (!fix.hasSpeed()) speedMps = (float) Math.min(35.0, delta / (deltaMs / 1000.0));
             if (delta >= 5) traveled += delta;
         }
         prefs.edit()
                 .putFloat("ride_meters", (float) traveled)
+                .putFloat("ride_speed_mps", speedMps)
                 .putLong("ride_last_lat", Double.doubleToRawLongBits(fix.getLatitude()))
                 .putLong("ride_last_lon", Double.doubleToRawLongBits(fix.getLongitude()))
                 .putLong("ride_last_time", time)
@@ -116,7 +119,7 @@ public class RideTrackingService extends Service implements LocationListener {
         return new Notification.Builder(this, CHANNEL)
                 .setContentTitle("Riders Pay · ride in progress")
                 .setContentText(String.format(java.util.Locale.US, "GPS tracking active · %.2f km", km))
-                .setSmallIcon(com.riderspay.autodriver.R.drawable.ic_auto)
+                .setSmallIcon(com.riderspay.autodriver.R.drawable.riders_pay_logo)
                 .setContentIntent(action)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
