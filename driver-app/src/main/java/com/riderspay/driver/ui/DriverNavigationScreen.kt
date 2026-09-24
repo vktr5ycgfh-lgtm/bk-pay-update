@@ -25,9 +25,9 @@ import com.riderspay.driver.data.Ride
     val camera=rememberCameraPositionState(); LaunchedEffect(live){live?.let{camera.animate(CameraUpdateFactory.newLatLngZoom(it,16f))}}
     Box(Modifier.fillMaxSize()){
         GoogleMap(Modifier.fillMaxSize(),cameraPositionState=camera,properties=MapProperties(isMyLocationEnabled=false)){
-            live?.let{Marker(state=rememberUpdatedMarkerState(it),title="Your auto",rotation=bearing,flat=true,icon=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))}
-            Marker(state=rememberUpdatedMarkerState(LatLng(ride.pickup.lat,ride.pickup.lng)),title="Pickup")
-            Marker(state=rememberUpdatedMarkerState(LatLng(ride.drop.lat,ride.drop.lng)),title="Drop")
+            live?.let{Marker(state=MarkerState(it),title="Your auto",rotation=bearing,flat=true,icon=BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))}
+            Marker(state=MarkerState(LatLng(ride.pickup.lat,ride.pickup.lng)),title="Pickup")
+            Marker(state=MarkerState(LatLng(ride.drop.lat,ride.drop.lng)),title="Drop")
             if(ride.encodedPolyline.isNotBlank()) Polyline(points=PolyUtil.decode(ride.encodedPolyline),color=Color(0xFFFFCC00),width=14f)
         }
         Card(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(14.dp),colors=CardDefaults.cardColors(containerColor=Color(0xF21A1C20))){Column(Modifier.padding(16.dp)){Text(ride.status,color=Color(0xFFFFCC00));Text(ride.pickup.address,color=Color.White);Text("→ ${ride.drop.address}",color=Color.LightGray);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("ARRIVED","PICKED","DROPPED").forEach{OutlinedButton({onAction(it)},modifier=Modifier.weight(1f)){Text(it.take(4))}}}}}

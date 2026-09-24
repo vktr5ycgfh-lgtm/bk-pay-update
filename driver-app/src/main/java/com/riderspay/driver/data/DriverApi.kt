@@ -28,7 +28,7 @@ class DriverApi(
     suspend fun leaveStand(standId: String) = call("leaveStand", mapOf("standId" to standId))
 
     private suspend fun call(name: String, payload: Map<String, Any?>): Map<*, *> {
-        val result = functions.getHttpsCallable(name).call(payload).await().data
+        val result = functions.getHttpsCallable(name).call(payload).await().getData()
         return result as? Map<*, *> ?: emptyMap<String, Any>()
     }
 }
