@@ -13,5 +13,5 @@ class ConsumerApi(private val db:FirebaseFirestore=FirebaseFirestore.getInstance
     suspend fun cancel(rideId:String)=call("cancelRide",mapOf("rideId" to rideId))
     fun ride(id:String)=callbackFlow<Ride?>{val reg=db.collection("rides").document(id).addSnapshotListener{s,e->if(e!=null)close(e)else trySend(s?.toObject(Ride::class.java)?.copy(rideId=id))};awaitClose{reg.remove()}}
     fun telemetry(id:String)=callbackFlow<Pair<com.google.android.gms.maps.model.LatLng,Float>?>{val reg=db.collection("rides").document(id).collection("telemetry").document("current").addSnapshotListener{s,e->if(e!=null)close(e)else{val g=s?.getGeoPoint("location");trySend(g?.let{com.google.android.gms.maps.model.LatLng(it.latitude,it.longitude) to ((s.getDouble("bearing")?:0.0).toFloat())})}};awaitClose{reg.remove()}}
-    private suspend fun call(name:String,data:Any):Map<*,*>{return fn.getHttpsCallable(name).call(data).await().data as? Map<*,*>?:error("Invalid cloud response")}
+    private suspend fun call(name:String,data:Any):Map<*,*>{return fn.getHttpsCallable(name).call(data).await().getData() as? Map<*,*>?:error("Invalid cloud response")}
 }
